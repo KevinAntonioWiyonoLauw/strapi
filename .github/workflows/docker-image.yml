@@ -14,18 +14,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Build the Docker image
-      run: |
-        docker build . --file Dockerfile.prod --tag kevinio/strapi:$(date +%s)
-        docker build . --file Dockerfile.prod --tag kevinio/strapi:latest
-        docker build . --file Dockerfile.prod --tag kevinio/strapi:${{ github.sha }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
     
-    - name: Push image to Docker Hub
+    - name: Login to Docker Hub
       if: github.event_name == 'push'
       run: |
         docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-        docker push kevinio/strapi:latest
-        docker push kevinio/strapi:${{ github.sha }}
+    
+    - name: Build and push multi-platform Docker image
+      if: github.event_name == 'push'
+      run: |
+        docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --file Dockerfile.prod \
+          --tag kevinio/strapi:latest \
+          --tag kevinio/strapi:${{ github.sha }} \
+          --push \
+          .
 
   deploy:
     needs: build
@@ -40,24 +46,23 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
+          sudo -i
+        
           cd /home/ubuntu/strapi
           
-          # Pull latest Strapi image saja
+          # Pull latest Strapi image
           docker pull kevinio/strapi:latest
           
           # Stop existing containers
           docker compose down || true
           
-          # Start containers with docker-compose
+          # Start containers
           docker compose up -d
           
-          # Remove old Strapi images (cleanup)
+          # Remove old images (cleanup)
           docker image prune -f
           
           # Show status
           docker compose ps
-          
-          # Show logs
-          docker compose logs strapi --tail=10
           
           echo "✅ Deployment completed at $(date)"
