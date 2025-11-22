@@ -1,9 +1,8 @@
-name: Build and Publish image to Docker Hub
+name: Docker Image CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
     paths:
       - 'dockerfile.prod'
       - 'src/**'
@@ -14,21 +13,25 @@ on:
       - 'data/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  publish_images:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      
-      - name: build image
-        run: |
-          docker build -f dockerfile.prod -t kevinio/strapi:latest .
-          docker build -f dockerfile.prod -t kevinio/strapi:${{ github.sha }} .
-      
-      - name: push image to docker hub
-        run: |
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push kevinio/strapi:latest
-          docker push kevinio/strapi:${{ github.sha }}
+    - uses: actions/checkout@v4
+    
+    - name: Build the Docker image
+      run: |
+        docker build . --file dockerfile.prod --tag kevinio/strapi:$(date +%s)
+        docker build . --file dockerfile.prod --tag kevinio/strapi:latest
+        docker build . --file dockerfile.prod --tag kevinio/strapi:${{ github.sha }}
+    
+    - name: Push image to Docker Hub
+      if: github.event_name == 'push'
+      run: |
+        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+        docker push kevinio/strapi:latest
+        docker push kevinio/strapi:${{ github.sha }}
