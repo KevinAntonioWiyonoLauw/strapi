@@ -14,18 +14,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Build the Docker image
-      run: |
-        docker build . --file Dockerfile.prod --tag kevinio/strapi:$(date +%s)
-        docker build . --file Dockerfile.prod --tag kevinio/strapi:latest
-        docker build . --file Dockerfile.prod --tag kevinio/strapi:${{ github.sha }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
     
-    - name: Push image to Docker Hub
+    - name: Login to Docker Hub
       if: github.event_name == 'push'
       run: |
         docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-        docker push kevinio/strapi:latest
-        docker push kevinio/strapi:${{ github.sha }}
+    
+    - name: Build and push Docker image
+      run: |
+        docker buildx build \
+          --platform linux/arm64 \
+          --file Dockerfile.prod \
+          --tag kevinio/strapi:latest \
+          --tag kevinio/strapi:${{ github.sha }} \
+          --push \
+          .
 
   deploy:
     needs: build
