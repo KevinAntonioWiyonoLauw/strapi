@@ -3,18 +3,9 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'dockerfile.prod'
-      - 'src/**'
-      - 'config/**'
-      - 'scripts/**'
-      - 'types/**'
-      - 'public/**'
-      - 'data/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch: 
 
 jobs:
   build:
