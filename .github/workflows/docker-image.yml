@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
+    
     - name: Build the Docker image
       run: |
         docker build . --file Dockerfile.prod --tag kevinio/strapi:$(date +%s)
@@ -26,3 +26,38 @@ jobs:
         docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
         docker push kevinio/strapi:latest
         docker push kevinio/strapi:${{ github.sha }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deploy to EC2 instance
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          cd /home/ubuntu/strapi
+          
+          # Pull latest Strapi image saja
+          docker pull kevinio/strapi:latest
+          
+          # Stop existing containers
+          docker-compose down || true
+          
+          # Start containers with docker-compose
+          docker-compose up -d
+          
+          # Remove old Strapi images (cleanup)
+          docker image prune -f
+          
+          # Show status
+          docker-compose ps
+          
+          # Show logs
+          docker-compose logs strapi --tail=10
+          
+          echo "✅ Deployment completed at $(date)"
