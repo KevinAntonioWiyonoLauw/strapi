@@ -39,6 +39,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
+    - uses: actions/checkout@v4  
+    
     - name: Deploy to EC2 instance
       uses: appleboy/ssh-action@master
       with:
@@ -46,8 +48,6 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-          sudo -i
-        
           cd /home/ubuntu/strapi
           
           # Pull latest Strapi image
@@ -55,8 +55,26 @@ jobs:
           
           # Stop existing containers
           docker compose down || true
+
+    - name: Copy docker-compose.yml to VPS
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        source: "docker-compose.yml"
+        target: "/home/ubuntu/strapi/"
+        
+    - name: Start services on VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          cd /home/ubuntu/strapi
           
-          # Start containers
+          # Start containers with updated compose file
           docker compose up -d
           
           # Remove old images (cleanup)
