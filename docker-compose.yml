@@ -3,7 +3,7 @@ services:
     image: kevinio/strapi:latest
     container_name: strapi-prod
     restart: unless-stopped
-    platform: linux/amd64
+    platform: linux/arm64
     env_file:
       - .env
     environment:
@@ -27,7 +27,7 @@ services:
 
   strapiDB-prod:
     container_name: strapiDB-prod
-    platform: linux/amd64
+    platform: linux/arm64
     restart: unless-stopped
     image: postgres:15-alpine
     environment:
