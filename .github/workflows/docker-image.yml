@@ -46,18 +46,18 @@ jobs:
           docker pull kevinio/strapi:latest
           
           # Stop existing containers
-          docker-compose down || true
+          docker compose down || true
           
           # Start containers with docker-compose
-          docker-compose up -d
+          docker compose up -d
           
           # Remove old Strapi images (cleanup)
           docker image prune -f
           
           # Show status
-          docker-compose ps
+          docker compose ps
           
           # Show logs
-          docker-compose logs strapi --tail=10
+          docker compose logs strapi --tail=10
           
           echo "✅ Deployment completed at $(date)"
