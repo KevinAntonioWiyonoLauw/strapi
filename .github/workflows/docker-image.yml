@@ -26,12 +26,11 @@ jobs:
       if: github.event_name == 'push'
       run: |
         docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          --file Dockerfile.prod \
-          --tag kevinio/strapi:latest \
-          --tag kevinio/strapi:${{ github.sha }} \
-          --push \
-          .
+        --platform linux/arm64 \
+        --file Dockerfile.prod \
+        --tag kevinio/strapi:latest \
+        --push \
+        .
 
   deploy:
     needs: build
