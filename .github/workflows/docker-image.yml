@@ -14,9 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: List files for debugging
-      run: ls -la
-    
     - name: Build the Docker image
       run: |
         docker build . --file Dockerfile.prod --tag kevinio/strapi:$(date +%s)
