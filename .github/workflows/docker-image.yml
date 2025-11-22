@@ -1,0 +1,34 @@
+name: Build and Publish image to Docker Hub
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dockerfile.prod'
+      - 'src/**'
+      - 'config/**'
+      - 'scripts/**'
+      - 'types/**'
+      - 'public/**'
+      - 'data/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  publish_images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      
+      - name: build image
+        run: |
+          docker build -f dockerfile.prod -t kevinio/strapi:latest .
+          docker build -f dockerfile.prod -t kevinio/strapi:${{ github.sha }} .
+      
+      - name: push image to docker hub
+        run: |
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker push kevinio/strapi:latest
+          docker push kevinio/strapi:${{ github.sha }}

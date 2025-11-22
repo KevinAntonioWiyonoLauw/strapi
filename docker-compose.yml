@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  strapi:
+    image: kevinio/strapi:latest
+    container_name: strapi-prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 1337
+      # Database
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: strapiDB-prod
+      DATABASE_PORT: 5432
+      DATABASE_SSL: false
+    ports:
+      - "1337:1337"
+    depends_on:
+      strapiDB-prod:
+        condition: service_healthy
+    volumes:
+      - strapi-uploads:/opt/app/public/uploads
+      - strapi-exports:/opt/app/exports
+      - strapi-cache:/opt/app/.cache
+      - strapi-data:/opt/app/data
+    networks:
+      - strapi-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1337/_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  strapiDB-prod:
+    container_name: strapiDB-prod
+    platform: linux/amd64
+    restart: unless-stopped
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    volumes:
+      - strapi-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - strapi-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  strapi-db-data:
+    driver: local
+  strapi-uploads:
+    driver: local
+  strapi-exports:
+    driver: local
+  strapi-cache:
+    driver: local
+  strapi-data:
+    driver: local
+
+networks:
+  strapi-network:
+    driver: bridge
