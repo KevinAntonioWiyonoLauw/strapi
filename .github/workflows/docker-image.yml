@@ -14,23 +14,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    - name: Build the Docker image
+      run: |
+        docker build . --file Dockerfile.prod --tag kevinio/strapi:$(date +%s)
+        docker build . --file Dockerfile.prod --tag kevinio/strapi:latest
+        docker build . --file Dockerfile.prod --tag kevinio/strapi:${{ github.sha }}
     
-    - name: Login to Docker Hub
+    - name: Push image to Docker Hub
       if: github.event_name == 'push'
       run: |
         docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-    
-    - name: Build and push multi-platform Docker image
-      if: github.event_name == 'push'
-      run: |
-        docker buildx build \
-        --platform linux/arm64 \
-        --file Dockerfile.prod \
-        --tag kevinio/strapi:latest \
-        --push \
-        .
+        docker push kevinio/strapi:latest
+        docker push kevinio/strapi:${{ github.sha }}
 
   deploy:
     needs: build
@@ -38,8 +33,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v4  
-    
     - name: Deploy to EC2 instance
       uses: appleboy/ssh-action@master
       with:
@@ -49,37 +42,22 @@ jobs:
         script: |
           cd /home/ubuntu/strapi
           
-          # Pull latest Strapi image
+          # Pull latest Strapi image saja
           docker pull kevinio/strapi:latest
           
           # Stop existing containers
           docker compose down || true
-
-    - name: Copy docker-compose.yml to VPS
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        source: "docker-compose.yml"
-        target: "/home/ubuntu/strapi/"
-        
-    - name: Start services on VPS
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          cd /home/ubuntu/strapi
           
-          # Start containers with updated compose file
+          # Start containers with docker-compose
           docker compose up -d
           
-          # Remove old images (cleanup)
+          # Remove old Strapi images (cleanup)
           docker image prune -f
           
           # Show status
           docker compose ps
+          
+          # Show logs
+          docker compose logs strapi --tail=10
           
           echo "✅ Deployment completed at $(date)"
