@@ -70,14 +70,10 @@ export interface SectionsMetadatum extends Struct.ComponentSchema {
   collectionName: 'components_sections_metadata';
   info: {
     description: 'Component for metadata related to alumni entry, used in StrapiAlumni.';
-    displayName: 'Metadatum';
+    displayName: 'Metadata';
   };
   attributes: {
-    googleFormsId: Schema.Attribute.String;
     isPublic: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    photo: Schema.Attribute.Media<'images'>;
-    source: Schema.Attribute.Enumeration<['manual', 'google-forms']> &
-      Schema.Attribute.DefaultTo<'manual'>;
   };
 }
 
@@ -90,23 +86,7 @@ export interface SectionsPekerjaan extends Struct.ComponentSchema {
   attributes: {
     currentEmployer: Schema.Attribute.String;
     position: Schema.Attribute.String;
-    workField: Schema.Attribute.Enumeration<
-      [
-        'akademisi',
-        'pemerintah',
-        'lembaga-pemerintah',
-        'wirausaha',
-        'swasta',
-        'konsultan',
-        'teknologi',
-        'keuangan',
-        'media',
-        'kesehatan',
-        'pendidikan',
-        'nonprofit',
-        'lainnya',
-      ]
-    >;
+    workField: Schema.Attribute.String;
   };
 }
 

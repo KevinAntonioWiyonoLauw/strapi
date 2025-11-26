@@ -10,22 +10,7 @@
       "type": "string"
     },
     "workField": {
-      "type": "enumeration",
-      "enum": [
-        "akademisi",
-        "pemerintah",
-        "lembaga-pemerintah",
-        "wirausaha",
-        "swasta",
-        "konsultan",
-        "teknologi",
-        "keuangan",
-        "media",
-        "kesehatan",
-        "pendidikan",
-        "nonprofit",
-        "lainnya"
-      ]
+      "type": "string"
     },
     "position": {
       "type": "string"

@@ -6,6 +6,9 @@
   },
   "options": {},
   "attributes": {
+    "helpTopics": {
+      "type": "string"
+    },
     "willingToHelp": {
       "type": "enumeration",
       "enum": [
@@ -14,9 +17,6 @@
         "beasiswa-studi",
         "networking"
       ]
-    },
-    "helpTopics": {
-      "type": "string"
     }
   },
   "config": {}

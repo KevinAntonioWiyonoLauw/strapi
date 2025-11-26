@@ -523,8 +523,8 @@ export interface ApiAlumniAlumni extends Struct.CollectionTypeSchema {
       'api::alumni.alumni'
     > &
       Schema.Attribute.Private;
+    metadata: Schema.Attribute.Component<'sections.metadatum', false>;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    nim: Schema.Attribute.String;
     pekerjaan: Schema.Attribute.Component<'sections.pekerjaan', false>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
