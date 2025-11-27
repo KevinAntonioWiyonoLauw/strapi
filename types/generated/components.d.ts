@@ -37,9 +37,7 @@ export interface SectionsKontribusi extends Struct.ComponentSchema {
   };
   attributes: {
     helpTopics: Schema.Attribute.String;
-    willingToHelp: Schema.Attribute.Enumeration<
-      ['mentoring-career', 'magang-riset', 'beasiswa-studi', 'networking']
-    >;
+    willingToHelp: Schema.Attribute.JSON;
   };
 }
 

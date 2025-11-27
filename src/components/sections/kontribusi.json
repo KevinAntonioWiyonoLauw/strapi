@@ -10,13 +10,7 @@
       "type": "string"
     },
     "willingToHelp": {
-      "type": "enumeration",
-      "enum": [
-        "mentoring-career",
-        "magang-riset",
-        "beasiswa-studi",
-        "networking"
-      ]
+      "type": "json"
     }
   },
   "config": {}

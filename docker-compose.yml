@@ -1,29 +1,29 @@
 services:
-  strapi:
-    image: kevinio/strapi:latest
-    container_name: strapi-prod
-    restart: unless-stopped
-    platform: linux/arm64
-    env_file:
-      - .env
-    environment:
-      NODE_ENV: production
-      HOST: 0.0.0.0
-      PORT: 1337
-      DATABASE_CLIENT: postgres
-      DATABASE_HOST: strapiDB-prod
-      DATABASE_PORT: 5432
-      DATABASE_SSL: false
-    ports:
-      - "1337:1337"
-    depends_on:
-      strapiDB-prod:
-        condition: service_healthy
-    volumes:
-      - strapi-uploads:/opt/app/public/uploads
-      - strapi-exports:/opt/app/exports
-      - strapi-cache:/opt/app/.cache
-      - strapi-data:/opt/app/data
+  # strapi:
+  #   image: kevinio/strapi:latest
+  #   container_name: strapi-prod
+  #   restart: unless-stopped
+  #   platform: linux/arm64
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     NODE_ENV: production
+  #     HOST: 0.0.0.0
+  #     PORT: 1337
+  #     DATABASE_CLIENT: postgres
+  #     DATABASE_HOST: strapiDB-prod
+  #     DATABASE_PORT: 5432
+  #     DATABASE_SSL: false
+  #   ports:
+  #     - "1337:1337"
+  #   depends_on:
+  #     strapiDB-prod:
+  #       condition: service_healthy
+  #   volumes:
+  #     - strapi-uploads:/opt/app/public/uploads
+  #     - strapi-exports:/opt/app/exports
+  #     - strapi-cache:/opt/app/.cache
+  #     - strapi-data:/opt/app/data
 
   strapiDB-prod:
     container_name: strapiDB-prod
