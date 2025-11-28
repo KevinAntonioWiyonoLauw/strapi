@@ -46,6 +46,21 @@ services:
       retries: 5
       start_period: 30s
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-prod
+    restart: unless-stopped
+    platform: linux/arm64
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - proxy_net
+
 volumes:
   strapi-db-data:
     driver: local
@@ -57,3 +72,9 @@ volumes:
     driver: local
   strapi-data:
     driver: local
+  pgadmin-data:
+    driver: local
+
+networks:
+  proxy_net:
+    external: true
