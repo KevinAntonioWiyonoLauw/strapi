@@ -4,7 +4,7 @@ export default ({ env }) => ({
     connection: {
       connectionString: env('DATABASE_URL'),
     },
-    debug: true,
+    debug: false,
     pool: { min: 0, max: 7 },
   },
 });
