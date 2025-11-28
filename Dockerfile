@@ -1,23 +1,34 @@
-# Reference: https://pnpm.io/docker#example-1-build-a-bundle-in-a-docker-container
+FROM node:22-slim AS build
 
-FROM node:22-slim AS base
+# deps OS (untuk sharp dll)
 RUN apt-get update && \
-    apt-get install curl -y --no-install-recommends
+    apt-get install -y --no-install-recommends \
+    build-essential python3 git curl libvips-dev && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm i pnpm -g
-COPY . /app
+RUN npm install -g pnpm
+
 WORKDIR /app
 
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store  pnpm i -P --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store  pnpm i --frozen-lockfile
-RUN pnpm build
+COPY . .
 
-FROM base
-COPY --from=prod-deps /app/node_modules ./node_modules
+RUN pnpm run build
+
+FROM node:22-slim AS runtime
+
+WORKDIR /app
+
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./package.json
+
+RUN npm install --omit=dev
+
 EXPOSE 1337
+
 CMD ["npm", "start"]
