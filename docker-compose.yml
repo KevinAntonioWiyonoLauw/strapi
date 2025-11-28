@@ -24,6 +24,8 @@ services:
       - strapi-exports:/opt/app/exports
       - strapi-cache:/opt/app/.cache
       - strapi-data:/opt/app/data
+    networks:
+      - proxy_net
 
   strapiDB-prod:
     container_name: strapiDB-prod
@@ -45,6 +47,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - proxy_net
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -72,8 +76,11 @@ volumes:
     driver: local
   strapi-data:
     driver: local
+<<<<<<< HEAD
   pgadmin-data:
     driver: local
+=======
+>>>>>>> cd4844c57d769d0e329cbd18d8cf9e81badd5738
 
 networks:
   proxy_net:
