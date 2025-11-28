@@ -1,39 +1,23 @@
-FROM node:18-alpine
+# Reference: https://pnpm.io/docker#example-1-build-a-bundle-in-a-docker-container
 
-RUN apk update && apk add --no-cache \
-  build-base \
-  gcc \
-  autoconf \
-  automake \
-  zlib-dev \
-  libpng-dev \
-  nasm \
-  bash \
-  vips-dev \
-  git
+FROM node:22-slim AS base
+RUN apt-get update && \
+    apt-get install curl -y --no-install-recommends
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN npm i pnpm -g
+COPY . /app
+WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store  pnpm i -P --frozen-lockfile
 
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store  pnpm i --frozen-lockfile
+RUN pnpm build
 
-WORKDIR /opt/app
-
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm config set fetch-retry-maxtimeout 600000
-
-RUN pnpm install --frozen-lockfile
-
-COPY . .
-
-RUN chown -R node:node /opt/app
-USER node
-
-# Build Strapi
-RUN pnpm run build
-
+FROM base
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
 EXPOSE 1337
-
-CMD ["pnpm", "run", "start"]
-
+CMD ["npm", "start"]
