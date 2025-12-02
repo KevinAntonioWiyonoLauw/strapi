@@ -72,6 +72,8 @@ export interface SectionsMetadatum extends Struct.ComponentSchema {
   };
   attributes: {
     isPublic: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    statusVerification: Schema.Attribute.Enumeration<['pending', 'approved']> &
+      Schema.Attribute.DefaultTo<'pending'>;
   };
 }
 

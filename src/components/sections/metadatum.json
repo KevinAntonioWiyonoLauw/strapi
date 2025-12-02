@@ -9,6 +9,24 @@
     "isPublic": {
       "type": "boolean",
       "default": true
+    },
+    "statusVerification": {
+      "type": "enumeration",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "isPublic"
+            },
+            true
+          ]
+        }
+      },
+      "default": "pending",
+      "enum": [
+        "pending",
+        "approved"
+      ]
     }
   },
   "config": {}
