@@ -36,7 +36,7 @@ export interface SectionsKontribusi extends Struct.ComponentSchema {
     displayName: 'Kontribusi';
   };
   attributes: {
-    helpTopics: Schema.Attribute.String;
+    helpTopics: Schema.Attribute.Text;
     willingToHelp: Schema.Attribute.JSON;
   };
 }

@@ -7,7 +7,7 @@
   "options": {},
   "attributes": {
     "helpTopics": {
-      "type": "string"
+      "type": "text"
     },
     "willingToHelp": {
       "type": "json"
