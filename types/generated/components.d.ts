@@ -48,7 +48,7 @@ export interface SectionsLainnya extends Struct.ComponentSchema {
     displayName: 'Lainnya';
   };
   attributes: {
-    suggestions: Schema.Attribute.String;
+    suggestions: Schema.Attribute.Text;
   };
 }
 
