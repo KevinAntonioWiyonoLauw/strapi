@@ -7,7 +7,7 @@
   "options": {},
   "attributes": {
     "suggestions": {
-      "type": "string"
+      "type": "text"
     }
   },
   "config": {}
