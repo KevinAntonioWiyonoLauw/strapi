@@ -15,6 +15,14 @@
       "type": "string",
       "required": true
     },
+    "jejaringAlumniOfficerReady": {
+      "type": "enumeration",
+      "default": "tidak",
+      "enum": [
+        "ya",
+        "tidak"
+      ]
+    },
     "batch": {
       "type": "integer",
       "required": true,
