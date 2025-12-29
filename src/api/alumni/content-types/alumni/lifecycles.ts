@@ -1,45 +1,54 @@
 const computeOfficerReady = (entry: any) => entry?.jejaring?.alumniOfficerReady ?? 'tidak';
 
-const setDerivedOfficerReadyFromPayload = (data: any) => {
-  if (!data || typeof data !== 'object') return false;
+const setDerivedFromPayloadIfPresent = (data: any) => {
+  if (!data || typeof data !== 'object') return;
 
-  // Only sync when the component payload is present and explicitly includes alumniOfficerReady.
-  if (!data.jejaring || typeof data.jejaring !== 'object') return false;
-  if (!Object.prototype.hasOwnProperty.call(data.jejaring, 'alumniOfficerReady')) return false;
+  const jejaring = data.jejaring;
+  if (!jejaring || typeof jejaring !== 'object') return;
 
-  data.jejaringAlumniOfficerReady = data.jejaring.alumniOfficerReady ?? 'tidak';
-  return true;
+  if (!Object.prototype.hasOwnProperty.call(jejaring, 'alumniOfficerReady')) return;
+
+  data.jejaringAlumniOfficerReady = jejaring.alumniOfficerReady ?? 'tidak';
 };
 
-const setDerivedOfficerReadyFromDb = async (event: any) => {
-  const where = event?.params?.where;
-  if (!where || typeof where !== 'object') return;
-
+const syncDerivedFromDbById = async (id: number) => {
   const alumniQuery = strapi.db.query('api::alumni.alumni');
+
   const existing = await alumniQuery.findOne({
-    where,
+    where: { id },
     populate: { jejaring: true },
   });
 
   if (!existing) return;
 
-  event.params.data.jejaringAlumniOfficerReady = computeOfficerReady(existing);
+  const expected = computeOfficerReady(existing);
+
+  if (existing.jejaringAlumniOfficerReady !== expected) {
+    await alumniQuery.update({
+      where: { id },
+      data: { jejaringAlumniOfficerReady: expected },
+    });
+  }
 };
 
 export default {
   beforeCreate(event: any) {
-    setDerivedOfficerReadyFromPayload(event.params.data);
+    setDerivedFromPayloadIfPresent(event.params.data);
   },
 
-  async beforeUpdate(event: any) {
-    const didSyncFromPayload = setDerivedOfficerReadyFromPayload(event.params.data);
+  beforeUpdate(event: any) {
+    setDerivedFromPayloadIfPresent(event.params.data);
+  },
 
-    // If update payload doesn't include jejaring.alumniOfficerReady, keep derived field consistent
-    // by reading the current value from DB.
-    if (!didSyncFromPayload && event?.params?.data) {
-      if (event.params.data.jejaringAlumniOfficerReady == null) {
-        await setDerivedOfficerReadyFromDb(event);
-      }
+  async afterCreate(event: any) {
+    if (event?.result?.id) {
+      await syncDerivedFromDbById(event.result.id);
+    }
+  },
+
+  async afterUpdate(event: any) {
+    if (event?.result?.id) {
+      await syncDerivedFromDbById(event.result.id);
     }
   },
 };
